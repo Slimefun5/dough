@@ -28,7 +28,26 @@ class ItemNameAdapterBefore17 implements ItemNameAdapter {
     @ParametersAreNonnullByDefault
     public String getName(ItemStack item) throws IllegalAccessException, InvocationTargetException {
         Object instance = getCopy.invoke(null, item);
-        return (String) toString.invoke(getName.invoke(instance));
+
+        if (instance == null) {
+            return item.getType().name();
+        }
+
+        Object name = getName.invoke(instance);
+
+        if (name == null) {
+            // Can happen for some items on legacy servers; fall back to the material name.
+            return item.getType().name();
+        }
+
+        // On 1.8-1.12 NMS ItemStack#getName() already returns a String; only from 1.13 does it return
+        // an IChatBaseComponent that needs #getString(). Handle both so this adapter works on all <1.17.
+        if (name instanceof String) {
+            return (String) name;
+        }
+
+        Object result = toString.invoke(name);
+        return result != null ? (String) result : item.getType().name();
     }
 
 }

@@ -46,12 +46,12 @@ public final class CustomItemStack {
     }
 
     public static ItemStack create(@Nullable Material type, @Nullable String name, List<String> lore) {
-        return create(new ItemStack(safe(type)), name, lore.toArray(String[]::new));
+        return create(new ItemStack(safe(type)), name, lore.toArray(new String[0]));
     }
 
 
     public static ItemStack create(ItemStack item, List<String> list) {
-        return create(new ItemStack(item), list.get(0), list.subList(1, list.size()).toArray(String[]::new));
+        return create(new ItemStack(item), list.get(0), list.subList(1, list.size()).toArray(new String[0]));
     }
 
     public static ItemStack create(@Nullable Material type, List<String> list) {
@@ -70,7 +70,7 @@ public final class CustomItemStack {
      * @return Returns the item with a new type
      * @deprecated Setting the type via {@link ItemStack#setType(Material)} will not be supported soon.
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     public static ItemStack create(ItemStack itemStack, @Nullable Material type) {
         return new ItemStackEditor(itemStack).andStackConsumer(item -> item.setType(safe(type))).create();
     }
