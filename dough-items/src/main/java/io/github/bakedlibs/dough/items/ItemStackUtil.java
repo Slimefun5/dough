@@ -132,14 +132,23 @@ public final class ItemStackUtil {
      * @return {@link ItemStack#editMeta(Consumer)} if on paper, {@link ItemStack#setItemMeta(ItemMeta)} otherwise
      */
     public static boolean editMeta(ItemStack itemStack, Consumer<ItemMeta> consumer) {
-        if (PaperLib.isPaper()) {
-            return itemStack.editMeta(consumer);
-        } else {
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            if (itemMeta != null) {
-                consumer.accept(itemMeta);
-            }
-            return itemStack.setItemMeta(itemMeta);
+        // ItemStack#editMeta(Consumer) is Paper 1.20.5+, not "all Paper" - PaperLib.isPaper() is true
+        // for Paper 1.9-1.20.4 too, where the method does not exist. Invoke it reflectively when
+        // present and fall back to get/setItemMeta everywhere else (works on every version).
+        try {
+            java.lang.reflect.Method editMeta = ItemStack.class.getMethod("editMeta", Consumer.class);
+            Object result = editMeta.invoke(itemStack, consumer);
+            return !(result instanceof Boolean) || (Boolean) result;
+        } catch (NoSuchMethodException ignored) {
+            // Server predates ItemStack#editMeta - use the universal fallback below.
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to invoke ItemStack#editMeta", e);
         }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
+            consumer.accept(itemMeta);
+        }
+        return itemStack.setItemMeta(itemMeta);
     }
 }
