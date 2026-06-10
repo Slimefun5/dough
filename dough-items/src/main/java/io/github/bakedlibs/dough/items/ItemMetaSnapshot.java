@@ -46,10 +46,30 @@ public class ItemMetaSnapshot {
     public ItemMetaSnapshot(@Nonnull ItemMeta meta) {
         this.displayName = meta.hasDisplayName() ? Optional.of(meta.getDisplayName()) : Optional.empty();
         this.lore = meta.hasLore() ? Optional.of(Collections.unmodifiableList(meta.getLore())) : Optional.empty();
-        this.customModelData = meta.hasCustomModelData() ? OptionalInt.of(meta.getCustomModelData()) : OptionalInt.empty();
+        this.customModelData = readCustomModelData(meta);
 
         this.itemFlags = meta.getItemFlags();
         this.enchantments = meta.getEnchants();
+    }
+
+    /**
+     * Reads the custom model data reflectively. {@code ItemMeta#hasCustomModelData()} and
+     * {@code #getCustomModelData()} only exist from Minecraft 1.14 onwards; on the universal
+     * Java-8 jar this method must not hard-link them or it would {@link NoSuchMethodError} on
+     * legacy servers. Returns {@link OptionalInt#empty()} on any version that lacks the API.
+     */
+    @Nonnull
+    private static OptionalInt readCustomModelData(@Nonnull ItemMeta meta) {
+        try {
+            Boolean has = (Boolean) ItemMeta.class.getMethod("hasCustomModelData").invoke(meta);
+            if (Boolean.TRUE.equals(has)) {
+                return OptionalInt.of((Integer) ItemMeta.class.getMethod("getCustomModelData").invoke(meta));
+            }
+        } catch (ReflectiveOperationException | LinkageError ignored) {
+            // pre-1.14 server: custom model data is unsupported (NoSuchMethodError extends LinkageError)
+        }
+
+        return OptionalInt.empty();
     }
 
     public @Nonnull Optional<String> getDisplayName() {
