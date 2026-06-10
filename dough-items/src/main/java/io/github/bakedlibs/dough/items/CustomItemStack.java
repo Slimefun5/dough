@@ -12,6 +12,16 @@ import java.util.function.Consumer;
 @ParametersAreNonnullByDefault
 public final class CustomItemStack {
 
+    /**
+     * Java-8 universal port: a {@link Material} passed here may be {@code null} on a legacy server
+     * (XMaterial#parseMaterial returns null for a material that version doesn't have). Substitute a
+     * harmless placeholder so menu/icon items still build instead of throwing {@code new ItemStack(null)}.
+     * {@code PAPER} exists on every supported Minecraft version.
+     */
+    private static Material safe(@Nullable Material material) {
+        return material != null ? material : Material.PAPER;
+    }
+
     private CustomItemStack() {
         throw new IllegalStateException("Cannot instantiate CustomItemStack");
     }
@@ -20,8 +30,8 @@ public final class CustomItemStack {
         return new ItemStackEditor(itemStack).andMetaConsumer(metaConsumer).create();
     }
 
-    public static ItemStack create(Material material, Consumer<ItemMeta> metaConsumer) {
-        return new ItemStackEditor(material).andMetaConsumer(metaConsumer).create();
+    public static ItemStack create(@Nullable Material material, Consumer<ItemMeta> metaConsumer) {
+        return new ItemStackEditor(safe(material)).andMetaConsumer(metaConsumer).create();
     }
 
     public static ItemStack create(ItemStack item, @Nullable String name, String... lore) {
@@ -31,12 +41,12 @@ public final class CustomItemStack {
                 .create();
     }
 
-    public static ItemStack create(Material material, @Nullable String name, String... lore) {
-        return create(new ItemStack(material), name, lore);
+    public static ItemStack create(@Nullable Material material, @Nullable String name, String... lore) {
+        return create(new ItemStack(safe(material)), name, lore);
     }
 
-    public static ItemStack create(Material type, @Nullable String name, List<String> lore) {
-        return create(new ItemStack(type), name, lore.toArray(String[]::new));
+    public static ItemStack create(@Nullable Material type, @Nullable String name, List<String> lore) {
+        return create(new ItemStack(safe(type)), name, lore.toArray(String[]::new));
     }
 
 
@@ -44,8 +54,8 @@ public final class CustomItemStack {
         return create(new ItemStack(item), list.get(0), list.subList(1, list.size()).toArray(String[]::new));
     }
 
-    public static ItemStack create(Material type, List<String> list) {
-        return create(new ItemStack(type), list);
+    public static ItemStack create(@Nullable Material type, List<String> list) {
+        return create(new ItemStack(safe(type)), list);
     }
 
     public static ItemStack create(ItemStack item, int amount) {
@@ -61,8 +71,8 @@ public final class CustomItemStack {
      * @deprecated Setting the type via {@link ItemStack#setType(Material)} will not be supported soon.
      */
     @Deprecated(forRemoval = true)
-    public static ItemStack create(ItemStack itemStack, Material type) {
-        return new ItemStackEditor(itemStack).andStackConsumer(item -> item.setType(type)).create();
+    public static ItemStack create(ItemStack itemStack, @Nullable Material type) {
+        return new ItemStackEditor(itemStack).andStackConsumer(item -> item.setType(safe(type))).create();
     }
 
 }
