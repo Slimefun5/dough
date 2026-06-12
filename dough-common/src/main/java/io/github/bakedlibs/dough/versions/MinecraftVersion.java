@@ -1,5 +1,7 @@
 package io.github.bakedlibs.dough.versions;
 
+import java.util.regex.Matcher;
+
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang.Validate;
@@ -61,13 +63,14 @@ public class MinecraftVersion extends SemanticVersion {
         String bukkitVersion = server.getBukkitVersion();
 
         try {
-            // Strip away the later "-R0.1-SNAPSHOT" part
-            String minecraftVersion = CommonPatterns.DASH.split(bukkitVersion)[0];
+            // Match the leading major.minor.patch, ignoring suffixes like "-R0.1-SNAPSHOT" or ".build.69".
+            Matcher matcher = CommonPatterns.SEMANTIC_VERSIONS.matcher(bukkitVersion);
+            if (matcher.find()) {
+                return new MinecraftVersion(SemanticVersion.parse(matcher.group()));
+            }
 
-            // Parse this like any other semantic version
-            return new MinecraftVersion(SemanticVersion.parse(minecraftVersion));
+            throw new IllegalArgumentException("No version found in \"" + bukkitVersion + "\".");
         } catch (Exception x) {
-            // Something failed.
             throw new UnknownServerVersionException(bukkitVersion, x);
         }
     }
