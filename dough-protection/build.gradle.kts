@@ -3,11 +3,8 @@ plugins {
     `maven-publish`
 }
 
-// Repositories hosting the protection-plugin APIs (added to the inherited mavenCentral + papermc).
 repositories {
-    // Bolt (org.popcraft) is only correct from CodeMC, which ships the shaded bolt-bukkit jar that bundles
-    // the API (org.popcraft.bolt.protection/source). Other repos answer the same coordinate with a thin jar
-    // that omits it, so pin the whole group here to keep clean-machine builds reproducible.
+    // org.popcraft (Bolt) only resolves correctly from CodeMC; pin the group here.
     exclusiveContent {
         forRepository { maven("https://repo.codemc.org/repository/maven-public/") }
         filter { includeGroup("org.popcraft") }
@@ -25,8 +22,7 @@ repositories {
 }
 
 configurations.configureEach {
-    // sk89q poms cross-reference each other with the "latest.integration" metaversion, which Gradle can't
-    // resolve; pin it. mypet is an unpublished transitive; bukkit conflicts with the paper-api on classpath.
+    // sk89q cross-references use the "latest.integration" metaversion Gradle can't resolve.
     resolutionStrategy.eachDependency {
         if (requested.version == "latest.integration") {
             when (requested.group) {
@@ -37,10 +33,9 @@ configurations.configureEach {
     }
     exclude(module = "bukkit")
     exclude(group = "de.keyle", module = "mypet")
-    exclude(group = "org.spongepowered") // configurate, pulled transitively but unpublished + unused here
+    exclude(group = "org.spongepowered")
 }
 
-// Optional protection plugins: compile-only soft-dependencies, never bundled.
 dependencies {
     compileOnly(project(":dough-common"))
 
@@ -70,8 +65,7 @@ dependencies {
         "net.william278.husktowns:husktowns-bukkit:3.0-988161b",
         "net.william278.huskclaims:huskclaims-bukkit:1.0.2-e60150d",
         "de.epiceric:ShopChest:1.13-SNAPSHOT",
-        // bolt-bukkit carries BoltAPI; the model classes (Protection/Permission/SourceResolver) live in
-        // bolt-common, which isn't reliably pulled transitively, so depend on it explicitly.
+        // model classes live in bolt-common, not pulled transitively — add it explicitly.
         "org.popcraft:bolt-bukkit:1.0.580",
         "org.popcraft:bolt-common:1.0.580"
     )
