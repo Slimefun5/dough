@@ -1,9 +1,19 @@
+// `java` (not just `base`) because github-gradle 1.8.3 eagerly reads JavaPluginExtension on the project it
+// is applied to; the root only needs it for that, the actual library code lives in the subprojects.
+plugins {
+    java
+    id("io.github.intisy.github-gradle") version "1.8.3"
+}
+
+// The release tag drives the version in CI (-Partifact_version=<tag>); 8.0.0-j8 is the local default.
+version = (project.findProperty("artifact_version") ?: "8.0.0-j8").toString()
+
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
     group = "io.github.baked-libs"
-    version = "8.0.0-j8"
+    version = rootProject.version
 
     repositories {
         mavenCentral()
@@ -53,5 +63,14 @@ subprojects {
                 from(components["java"])
             }
         }
+    }
+}
+
+// Publishes each subproject as a <dough-module>.jar asset on the release (owner/repo auto-detected from
+// the git remote). Consume the whole set with githubImplementation("Slimefun5:dough:<tag>:all").
+publishGithub {
+    releaseName = "Release ${project.version}"
+    artifacts {
+        artifact { isModules = true }
     }
 }
