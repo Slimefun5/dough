@@ -18,7 +18,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
   <dependency>
       <groupId>io.github.intisy</groupId>
       <artifactId>dough</artifactId>
-      <version></version>
+      <version>8.0.0-j8</version>
   </dependency>
 ```
 
@@ -45,7 +45,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
       }
   }
   dependencies {
-      implementation 'io.github.intisy:dough:'
+      implementation 'io.github.intisy:dough:8.0.0-j8'
   }
 ```
 
@@ -57,10 +57,37 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
       id "io.github.intisy.github-gradle" version "1.3.7"
   }
   dependencies {
-      githubImplementation "intisy:dough:"
+      githubImplementation "intisy:dough:8.0.0-j8"
   }
 ```
 
+## Modules
+
+`dough` is published as separate modules. Pull every module at once with the `all` classifier:
+
+```groovy
+dependencies {
+    githubImplementation "Slimefun5:dough:8.0.0-j8:all"
+}
+```
+
+Or depend on individual modules:
+
+```groovy
+dependencies {
+    githubImplementation "Slimefun5:dough:8.0.0-j8:chat"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:common"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:config"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:data"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:inventories"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:items"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:protection"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:recipes"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:reflection"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:scheduling"
+    githubImplementation "Slimefun5:dough:8.0.0-j8:updater"
+}
+```
 
 Once you have it installed you can use it like so:
 
