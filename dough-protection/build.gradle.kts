@@ -5,6 +5,13 @@ plugins {
 
 // Repositories hosting the protection-plugin APIs (added to the inherited mavenCentral + papermc).
 repositories {
+    // Bolt (org.popcraft) is only correct from CodeMC, which ships the shaded bolt-bukkit jar that bundles
+    // the API (org.popcraft.bolt.protection/source). Other repos answer the same coordinate with a thin jar
+    // that omits it, so pin the whole group here to keep clean-machine builds reproducible.
+    exclusiveContent {
+        forRepository { maven("https://repo.codemc.org/repository/maven-public/") }
+        filter { includeGroup("org.popcraft") }
+    }
     maven("https://jitpack.io/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://maven.playpro.com/")                                  // CoreProtect
