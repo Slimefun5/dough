@@ -27,5 +27,7 @@ jobs:
       # Uploads every dough module as a <dough-module>.jar asset on the release for this tag.
       - name: Publish GitHub Release
         run: ./gradlew publishGithub -Partifact_version=${{ github.ref_name }} --no-daemon --refresh-dependencies
+        # Falls back to the built-in token so publishing works without extra setup; a PAT (if configured)
+        # is preferred because a PAT-created release also triggers the readme-dependency workflow.
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
