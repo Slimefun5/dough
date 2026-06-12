@@ -223,6 +223,13 @@
             <groupId>io.github.baked-libs</groupId>
             <artifactId>dough-protection</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <!-- org.bukkit:bukkit:LATEST (from protection-plugin deps) is unpublished; the Bukkit API comes from paper-api/spigot-api instead. -->
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.github.baked-libs</groupId>

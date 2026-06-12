@@ -11,3 +11,7 @@
 dependency-reduced-pom.xml
 publish.bat
 .ci-friendly-pom.xml
+
+# Gradle
+.gradle/
+**/build/
