@@ -1,11 +1,7 @@
-// `java` (not just `base`) because github-gradle 1.8.3 eagerly reads JavaPluginExtension on the project it
-// is applied to; the root only needs it for that, the actual library code lives in the subprojects.
 plugins {
-    java
-    id("io.github.intisy.github-gradle") version "1.8.3"
+    id("io.github.intisy.github-gradle") version "1.8.3.1"
 }
 
-// The release tag drives the version in CI (-Partifact_version=<tag>); 8.0.0-j8 is the local default.
 version = (project.findProperty("artifact_version") ?: "8.0.0-j8").toString()
 
 subprojects {
@@ -18,9 +14,6 @@ subprojects {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
-        // Fallback for dough-protection's volatile soft-dep plugin APIs whose remote artifacts drift or
-        // get pruned upstream (the old pom even flags "bring down this repo count"); everything resolvable
-        // comes from the remotes above.
         mavenLocal()
     }
 
@@ -38,7 +31,6 @@ subprojects {
         add("compileOnly", "commons-lang:commons-lang:2.6")
     }
 
-    // JDK 17 toolchain + --release 8: Java-8 bytecode validated against the Java-8 API.
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release.set(8)
@@ -66,13 +58,10 @@ subprojects {
     }
 }
 
-// The plugin reads the API token only from this extension, so feed it the CI-provided GITHUB_TOKEN.
 github {
     accessToken = System.getenv("GITHUB_TOKEN") ?: ""
 }
 
-// Publishes each subproject as a <dough-module>.jar asset on the release (owner/repo auto-detected from
-// the git remote). Consume the whole set with githubImplementation("Slimefun5:dough:<tag>:all").
 publishGithub {
     releaseName = "Release ${project.version}"
     artifacts {
