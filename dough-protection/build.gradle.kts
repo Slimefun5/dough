@@ -30,6 +30,7 @@ configurations.configureEach {
     }
     exclude(module = "bukkit")
     exclude(group = "de.keyle", module = "mypet")
+    exclude(group = "org.spongepowered") // configurate, pulled transitively but unpublished + unused here
 }
 
 // Optional protection plugins: compile-only soft-dependencies, never bundled.
