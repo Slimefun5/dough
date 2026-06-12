@@ -26,6 +26,6 @@ jobs:
 
       # Uploads every dough module as a <dough-module>.jar asset on the release for this tag.
       - name: Publish GitHub Release
-        run: ./gradlew publishGithub -Partifact_version=${{ github.ref_name }} --no-daemon
+        run: ./gradlew publishGithub -Partifact_version=${{ github.ref_name }} --no-daemon --refresh-dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}

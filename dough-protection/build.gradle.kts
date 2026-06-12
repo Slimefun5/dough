@@ -70,7 +70,10 @@ dependencies {
         "net.william278.husktowns:husktowns-bukkit:3.0-988161b",
         "net.william278.huskclaims:huskclaims-bukkit:1.0.2-e60150d",
         "de.epiceric:ShopChest:1.13-SNAPSHOT",
-        "org.popcraft:bolt-bukkit:1.0.580"
+        // bolt-bukkit carries BoltAPI; the model classes (Protection/Permission/SourceResolver) live in
+        // bolt-common, which isn't reliably pulled transitively, so depend on it explicitly.
+        "org.popcraft:bolt-bukkit:1.0.580",
+        "org.popcraft:bolt-common:1.0.580"
     )
     for (dep in softDeps) {
         compileOnly(dep)
