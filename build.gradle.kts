@@ -66,6 +66,11 @@ subprojects {
     }
 }
 
+// The plugin reads the API token only from this extension, so feed it the CI-provided GITHUB_TOKEN.
+github {
+    accessToken = System.getenv("GITHUB_TOKEN") ?: ""
+}
+
 // Publishes each subproject as a <dough-module>.jar asset on the release (owner/repo auto-detected from
 // the git remote). Consume the whole set with githubImplementation("Slimefun5:dough:<tag>:all").
 publishGithub {
