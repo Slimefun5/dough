@@ -3,8 +3,7 @@ plugins {
     `maven-publish`
 }
 
-// Extra repositories hosting the various protection-plugin APIs (in addition to the inherited
-// mavenCentral + papermc). Carried over verbatim from the old dough-protection pom.
+// Repositories hosting the protection-plugin APIs (added to the inherited mavenCentral + papermc).
 repositories {
     maven("https://jitpack.io/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -18,15 +17,9 @@ repositories {
     maven("https://repo.william278.net/snapshots/")                      // HuskTowns/HuskClaims
 }
 
-// Every protection plugin is an optional soft-dependency: present only at compile (provided). Their
-// transitive types ARE needed (e.g. WorldGuard's API references worldguard-core + WorldEdit's LocalPlayer),
-// so we keep transitives but neutralise the two that Maven tolerated and Gradle rejects:
-//   - WorldGuard declares WorldEdit as the dynamic version "latest.integration" -> force it to 7.2.17.
-//   - de.keyle:mypet (a transitive) isn't published anywhere reachable -> exclude it.
-// `bukkit` is excluded everywhere (conflicts with the paper-api already on the classpath).
 configurations.configureEach {
-    // The sk89q poms reference each other with Maven's "latest.integration" metaversion, which Gradle
-    // treats as an unresolvable dynamic version. Pin any such request to the versions we use.
+    // sk89q poms cross-reference each other with the "latest.integration" metaversion, which Gradle can't
+    // resolve; pin it. mypet is an unpublished transitive; bukkit conflicts with the paper-api on classpath.
     resolutionStrategy.eachDependency {
         if (requested.version == "latest.integration") {
             when (requested.group) {
@@ -39,6 +32,7 @@ configurations.configureEach {
     exclude(group = "de.keyle", module = "mypet")
 }
 
+// Optional protection plugins: compile-only soft-dependencies, never bundled.
 dependencies {
     compileOnly(project(":dough-common"))
 
