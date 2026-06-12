@@ -1,4 +1,7 @@
 plugins {
+    // Aggregator root: `base` provides the lifecycle tasks (build/assemble/clean) that publishGithub
+    // depends on. The actual library code lives in the subprojects.
+    base
     id("io.github.intisy.github-gradle") version "1.8.3.1"
 }
 
