@@ -1046,4 +1046,34 @@ public final class PersistentDataAPI {
     public static <T, Z> Optional<Z> getOptional(PersistentDataHolder holder, NamespacedKey key, PersistentDataType<T, Z> type) {
         return Optional.ofNullable(get(holder, key, type));
     }
+
+    /////////////////////////////////////
+    // Universal-jar, version-safe String-keyed overloads
+    //
+    // These take an opaque holder + a "namespace:key" String so their signatures carry no 1.12+/1.14+
+    // type, letting them be called on 1.8-1.13 (no PDC). They use PDC on 1.14+ and a real-NBT fallback
+    // on older servers. The existing NamespacedKey-typed methods above are untouched, so modern callers
+    // are unaffected.
+    /////////////////////////////////////
+
+    public static void setString(Object holder, String key, String value) {
+        VersionedPdc.setString(holder, key, value);
+    }
+
+    @Nullable
+    public static String getString(Object holder, String key) {
+        return VersionedPdc.getString(holder, key);
+    }
+
+    public static Optional<String> getOptionalString(Object holder, String key) {
+        return Optional.ofNullable(VersionedPdc.getString(holder, key));
+    }
+
+    public static boolean hasString(Object holder, String key) {
+        return VersionedPdc.has(holder, key);
+    }
+
+    public static void remove(Object holder, String key) {
+        VersionedPdc.remove(holder, key);
+    }
 }
