@@ -18,67 +18,107 @@ import org.bukkit.Bukkit;
  * On 1.14+ it uses the real {@code PersistentDataContainer}; on 1.8&ndash;1.13 (no PDC) it falls back to
  * real item NBT via CraftMetaItem's {@code unhandledTags} map. No 1.12+/1.14+ type is referenced in this
  * class's signatures, so it loads on every server version. This lets {@link PersistentDataAPI} expose
- * String-keyed overloads that work everywhere without breaking its existing {@code NamespacedKey} API.
- *
- * <p>
- * Currently the legacy (pre-1.14) fallback covers {@code String} values &mdash; the item-identity path that
- * matters for legacy support. Other types default gracefully on legacy servers and use PDC normally on 1.14+.
+ * String-keyed overloads (String/int/long/byte/double) that work everywhere without breaking its existing
+ * {@code NamespacedKey} API.
  */
 public final class VersionedPdc {
 
     private static final boolean PDC_SUPPORTED = classExists("org.bukkit.persistence.PersistentDataContainer");
-    private static final Constructor<?> NBT_TAG_STRING_CTOR = resolveNbtTagStringConstructor();
+    private static final String NMS_PACKAGE = resolveNmsPackage();
 
     private VersionedPdc() {}
 
+    // --- String --------------------------------------------------------------
+
     public static void setString(@Nullable Object holder, String key, String value) {
-        if (holder == null) {
-            return;
-        }
-
         if (PDC_SUPPORTED) {
-            Object container = invoke(holder, "getPersistentDataContainer");
-            Object type = pdcType("STRING");
-            Object bukkitKey = toBukkitKey(key);
-
-            if (container != null && type != null && bukkitKey != null) {
-                invoke(container, "set", bukkitKey, type, value);
-            }
+            pdcSet(holder, key, "STRING", value);
         } else {
-            nbtSetString(holder, key, value);
+            nbtSet(holder, key, "NBTTagString", String.class, value);
         }
     }
 
     @Nullable
     public static String getString(@Nullable Object holder, String key) {
-        if (holder == null) {
-            return null;
-        }
-
         if (PDC_SUPPORTED) {
-            Object container = invoke(holder, "getPersistentDataContainer");
-            Object type = pdcType("STRING");
-            Object bukkitKey = toBukkitKey(key);
-
-            if (container == null || type == null || bukkitKey == null) {
-                return null;
-            }
-
-            Object value = invoke(container, "get", bukkitKey, type);
+            Object value = pdcGet(holder, key, "STRING");
             return value instanceof String ? (String) value : null;
         } else {
-            return nbtGetString(holder, key);
+            Object tag = nbtGet(holder, key);
+            return tag == null ? null : (String) extractField(tag, String.class);
         }
     }
 
-    public static boolean has(@Nullable Object holder, String key) {
+    // --- int -----------------------------------------------------------------
+
+    public static void setInt(@Nullable Object holder, String key, int value) {
+        if (PDC_SUPPORTED) {
+            pdcSet(holder, key, "INTEGER", value);
+        } else {
+            nbtSet(holder, key, "NBTTagInt", int.class, value);
+        }
+    }
+
+    public static int getInt(@Nullable Object holder, String key, int defaultValue) {
+        Number value = getNumber(holder, key, "INTEGER", int.class);
+        return value != null ? value.intValue() : defaultValue;
+    }
+
+    // --- long ----------------------------------------------------------------
+
+    public static void setLong(@Nullable Object holder, String key, long value) {
+        if (PDC_SUPPORTED) {
+            pdcSet(holder, key, "LONG", value);
+        } else {
+            nbtSet(holder, key, "NBTTagLong", long.class, value);
+        }
+    }
+
+    public static long getLong(@Nullable Object holder, String key, long defaultValue) {
+        Number value = getNumber(holder, key, "LONG", long.class);
+        return value != null ? value.longValue() : defaultValue;
+    }
+
+    // --- double --------------------------------------------------------------
+
+    public static void setDouble(@Nullable Object holder, String key, double value) {
+        if (PDC_SUPPORTED) {
+            pdcSet(holder, key, "DOUBLE", value);
+        } else {
+            nbtSet(holder, key, "NBTTagDouble", double.class, value);
+        }
+    }
+
+    public static double getDouble(@Nullable Object holder, String key, double defaultValue) {
+        Number value = getNumber(holder, key, "DOUBLE", double.class);
+        return value != null ? value.doubleValue() : defaultValue;
+    }
+
+    // --- byte / boolean ------------------------------------------------------
+
+    public static void setByte(@Nullable Object holder, String key, byte value) {
+        if (PDC_SUPPORTED) {
+            pdcSet(holder, key, "BYTE", value);
+        } else {
+            nbtSet(holder, key, "NBTTagByte", byte.class, value);
+        }
+    }
+
+    public static byte getByte(@Nullable Object holder, String key, byte defaultValue) {
+        Number value = getNumber(holder, key, "BYTE", byte.class);
+        return value != null ? value.byteValue() : defaultValue;
+    }
+
+    // --- has / remove --------------------------------------------------------
+
+    public static boolean has(@Nullable Object holder, String key, String pdcTypeName) {
         if (holder == null) {
             return false;
         }
 
         if (PDC_SUPPORTED) {
             Object container = invoke(holder, "getPersistentDataContainer");
-            Object type = pdcType("STRING");
+            Object type = pdcType(pdcTypeName);
             Object bukkitKey = toBukkitKey(key);
 
             if (container == null || type == null || bukkitKey == null) {
@@ -87,7 +127,7 @@ public final class VersionedPdc {
 
             return Boolean.TRUE.equals(invoke(container, "has", bukkitKey, type));
         } else {
-            return nbtGetString(holder, key) != null;
+            return nbtGet(holder, key) != null;
         }
     }
 
@@ -104,11 +144,63 @@ public final class VersionedPdc {
                 invoke(container, "remove", bukkitKey);
             }
         } else {
-            nbtRemove(holder, key);
+            try {
+                Map<String, Object> tags = unhandledTags(holder);
+
+                if (tags != null) {
+                    tags.remove(key);
+                }
+            } catch (Throwable ignored) {
+                // nothing we can do
+            }
         }
     }
 
-    // --- PDC helpers (1.14+) -------------------------------------------------
+    // --- shared value path ---------------------------------------------------
+
+    @Nullable
+    private static Number getNumber(@Nullable Object holder, String key, String pdcTypeName, Class<?> primitive) {
+        if (PDC_SUPPORTED) {
+            Object value = pdcGet(holder, key, pdcTypeName);
+            return value instanceof Number ? (Number) value : null;
+        } else {
+            Object tag = nbtGet(holder, key);
+            return tag == null ? null : (Number) extractField(tag, primitive);
+        }
+    }
+
+    // --- PDC path (1.14+) ----------------------------------------------------
+
+    private static void pdcSet(@Nullable Object holder, String key, String pdcTypeName, Object value) {
+        if (holder == null) {
+            return;
+        }
+
+        Object container = invoke(holder, "getPersistentDataContainer");
+        Object type = pdcType(pdcTypeName);
+        Object bukkitKey = toBukkitKey(key);
+
+        if (container != null && type != null && bukkitKey != null) {
+            invoke(container, "set", bukkitKey, type, value);
+        }
+    }
+
+    @Nullable
+    private static Object pdcGet(@Nullable Object holder, String key, String pdcTypeName) {
+        if (holder == null) {
+            return null;
+        }
+
+        Object container = invoke(holder, "getPersistentDataContainer");
+        Object type = pdcType(pdcTypeName);
+        Object bukkitKey = toBukkitKey(key);
+
+        if (container == null || type == null || bukkitKey == null) {
+            return null;
+        }
+
+        return invoke(container, "get", bukkitKey, type);
+    }
 
     @Nullable
     private static Object pdcType(String typeName) {
@@ -134,8 +226,7 @@ public final class VersionedPdc {
         String value = index < 0 ? key : key.substring(index + 1);
 
         try {
-            Method fromString = bukkitKey.getMethod("fromString", String.class);
-            Object result = fromString.invoke(null, namespace + ":" + value);
+            Object result = bukkitKey.getMethod("fromString", String.class).invoke(null, namespace + ":" + value);
 
             if (result != null) {
                 return result;
@@ -156,8 +247,14 @@ public final class VersionedPdc {
     // --- NBT fallback (1.8-1.13, ItemMeta holders) ---------------------------
 
     @SuppressWarnings("unchecked")
-    private static void nbtSetString(Object holder, String key, String value) {
-        if (NBT_TAG_STRING_CTOR == null) {
+    private static void nbtSet(@Nullable Object holder, String key, String nbtTagSimpleName, Class<?> ctorParam, Object value) {
+        if (holder == null) {
+            return;
+        }
+
+        Constructor<?> ctor = nbtConstructor(nbtTagSimpleName, ctorParam);
+
+        if (ctor == null) {
             return;
         }
 
@@ -165,38 +262,39 @@ public final class VersionedPdc {
             Map<String, Object> tags = unhandledTags(holder);
 
             if (tags != null) {
-                tags.put(key, NBT_TAG_STRING_CTOR.newInstance(value));
+                tags.put(key, ctor.newInstance(value));
             }
         } catch (Throwable ignored) {
-            // legacy holder without unhandledTags (e.g. a block state) - nothing we can do here
+            // legacy holder without unhandledTags (e.g. a block state) - nothing we can do
         }
     }
 
     @Nullable
-    private static String nbtGetString(Object holder, String key) {
+    private static Object nbtGet(@Nullable Object holder, String key) {
+        if (holder == null) {
+            return null;
+        }
+
         try {
             Map<String, Object> tags = unhandledTags(holder);
-
-            if (tags == null) {
-                return null;
-            }
-
-            Object tag = tags.get(key);
-            return tag == null ? null : extractNbtString(tag);
+            return tags == null ? null : tags.get(key);
         } catch (Throwable ignored) {
             return null;
         }
     }
 
-    private static void nbtRemove(Object holder, String key) {
-        try {
-            Map<String, Object> tags = unhandledTags(holder);
+    @Nullable
+    private static Constructor<?> nbtConstructor(String nbtTagSimpleName, Class<?> ctorParam) {
+        if (NMS_PACKAGE == null) {
+            return null;
+        }
 
-            if (tags != null) {
-                tags.remove(key);
-            }
+        try {
+            Constructor<?> ctor = Class.forName(NMS_PACKAGE + "." + nbtTagSimpleName).getConstructor(ctorParam);
+            ctor.setAccessible(true);
+            return ctor;
         } catch (Throwable ignored) {
-            // nothing we can do
+            return null;
         }
     }
 
@@ -213,13 +311,29 @@ public final class VersionedPdc {
         return (Map<String, Object>) field.get(holder);
     }
 
+    /**
+     * Reads the single wrapped value out of an NBT tag (e.g. NBTTagString's String, NBTTagInt's int) by
+     * locating the field of the matching type - the field names are obfuscated and vary by version.
+     */
     @Nullable
-    private static String extractNbtString(Object nbtTagString) throws IllegalAccessException {
-        for (Field field : nbtTagString.getClass().getDeclaredFields()) {
-            if (field.getType() == String.class) {
-                field.setAccessible(true);
-                return (String) field.get(nbtTagString);
+    private static Object extractField(Object nbtTag, Class<?> primitive) {
+        Class<?> boxed = box(primitive);
+
+        try {
+            for (Field field : nbtTag.getClass().getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
+                Class<?> fieldType = field.getType();
+
+                if (fieldType == primitive || fieldType == boxed) {
+                    field.setAccessible(true);
+                    return field.get(nbtTag);
+                }
             }
+        } catch (Throwable ignored) {
+            // fall through
         }
 
         return null;
@@ -321,13 +435,10 @@ public final class VersionedPdc {
     }
 
     @Nullable
-    private static Constructor<?> resolveNbtTagStringConstructor() {
+    private static String resolveNmsPackage() {
         try {
             String cbPackage = Bukkit.getServer().getClass().getPackage().getName();
-            String version = cbPackage.substring(cbPackage.lastIndexOf('.') + 1);
-            Constructor<?> ctor = Class.forName("net.minecraft.server." + version + ".NBTTagString").getConstructor(String.class);
-            ctor.setAccessible(true);
-            return ctor;
+            return "net.minecraft.server." + cbPackage.substring(cbPackage.lastIndexOf('.') + 1);
         } catch (Throwable ignored) {
             return null;
         }

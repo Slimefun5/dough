@@ -1065,12 +1065,65 @@ public final class PersistentDataAPI {
         return VersionedPdc.getString(holder, key);
     }
 
+    public static String getString(Object holder, String key, String defaultVal) {
+        String value = VersionedPdc.getString(holder, key);
+        return value != null ? value : defaultVal;
+    }
+
     public static Optional<String> getOptionalString(Object holder, String key) {
         return Optional.ofNullable(VersionedPdc.getString(holder, key));
     }
 
     public static boolean hasString(Object holder, String key) {
-        return VersionedPdc.has(holder, key);
+        return VersionedPdc.has(holder, key, "STRING");
+    }
+
+    public static void setInt(Object holder, String key, int value) {
+        VersionedPdc.setInt(holder, key, value);
+    }
+
+    public static int getInt(Object holder, String key) {
+        return VersionedPdc.getInt(holder, key, -1);
+    }
+
+    public static int getInt(Object holder, String key, int defaultVal) {
+        return VersionedPdc.getInt(holder, key, defaultVal);
+    }
+
+    public static boolean hasInt(Object holder, String key) {
+        return VersionedPdc.has(holder, key, "INTEGER");
+    }
+
+    public static void setLong(Object holder, String key, long value) {
+        VersionedPdc.setLong(holder, key, value);
+    }
+
+    public static long getLong(Object holder, String key) {
+        return VersionedPdc.getLong(holder, key, -1L);
+    }
+
+    public static long getLong(Object holder, String key, long defaultVal) {
+        return VersionedPdc.getLong(holder, key, defaultVal);
+    }
+
+    public static void setDouble(Object holder, String key, double value) {
+        VersionedPdc.setDouble(holder, key, value);
+    }
+
+    public static double getDouble(Object holder, String key) {
+        return VersionedPdc.getDouble(holder, key, -1);
+    }
+
+    public static double getDouble(Object holder, String key, double defaultVal) {
+        return VersionedPdc.getDouble(holder, key, defaultVal);
+    }
+
+    public static void setBoolean(Object holder, String key, boolean value) {
+        VersionedPdc.setByte(holder, key, value ? (byte) 1 : (byte) 0);
+    }
+
+    public static boolean getBoolean(Object holder, String key) {
+        return VersionedPdc.getByte(holder, key, (byte) 0) == 1;
     }
 
     public static void remove(Object holder, String key) {
