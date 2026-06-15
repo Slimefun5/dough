@@ -74,10 +74,8 @@ public final class ItemStackSnapshot extends ItemStack {
         throw new UnsupportedOperationException(ERROR_MESSAGE);
     }
 
-    @Override
-    public int hashCode() {
-        throw new UnsupportedOperationException(ERROR_MESSAGE);
-    }
+    // No hashCode() override: ItemStack#hashCode() is final on MC 1.8, so overriding it makes the
+    // class fail JVM verification there. It inherits the superclass implementation instead.
 
     @Override
     public ItemStack clone() {
