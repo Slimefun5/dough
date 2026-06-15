@@ -18,7 +18,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
   <dependency>
       <groupId>io.github.intisy</groupId>
       <artifactId>dough</artifactId>
-      <version>4.0.5</version>
+      <version>4.0.6</version>
   </dependency>
 ```
 
@@ -45,7 +45,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
       }
   }
   dependencies {
-      implementation 'io.github.intisy:dough:4.0.5'
+      implementation 'io.github.intisy:dough:4.0.6'
   }
 ```
 
@@ -57,7 +57,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
       id "io.github.intisy.github-gradle" version "1.3.7"
   }
   dependencies {
-      githubImplementation "intisy:dough:4.0.5"
+      githubImplementation "intisy:dough:4.0.6"
   }
 ```
 
@@ -67,7 +67,7 @@ Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the 
 
 ```groovy
 dependencies {
-    githubImplementation "Slimefun5:dough:4.0.5:all"
+    githubImplementation "Slimefun5:dough:4.0.6:all"
 }
 ```
 
@@ -75,17 +75,17 @@ Or depend on individual modules:
 
 ```groovy
 dependencies {
-    githubImplementation "Slimefun5:dough:4.0.5:chat"
-    githubImplementation "Slimefun5:dough:4.0.5:common"
-    githubImplementation "Slimefun5:dough:4.0.5:config"
-    githubImplementation "Slimefun5:dough:4.0.5:data"
-    githubImplementation "Slimefun5:dough:4.0.5:inventories"
-    githubImplementation "Slimefun5:dough:4.0.5:items"
-    githubImplementation "Slimefun5:dough:4.0.5:protection"
-    githubImplementation "Slimefun5:dough:4.0.5:recipes"
-    githubImplementation "Slimefun5:dough:4.0.5:reflection"
-    githubImplementation "Slimefun5:dough:4.0.5:scheduling"
-    githubImplementation "Slimefun5:dough:4.0.5:updater"
+    githubImplementation "Slimefun5:dough:4.0.6:chat"
+    githubImplementation "Slimefun5:dough:4.0.6:common"
+    githubImplementation "Slimefun5:dough:4.0.6:config"
+    githubImplementation "Slimefun5:dough:4.0.6:data"
+    githubImplementation "Slimefun5:dough:4.0.6:inventories"
+    githubImplementation "Slimefun5:dough:4.0.6:items"
+    githubImplementation "Slimefun5:dough:4.0.6:protection"
+    githubImplementation "Slimefun5:dough:4.0.6:recipes"
+    githubImplementation "Slimefun5:dough:4.0.6:reflection"
+    githubImplementation "Slimefun5:dough:4.0.6:scheduling"
+    githubImplementation "Slimefun5:dough:4.0.6:updater"
 }
 ```
 
