@@ -1,0 +1,3 @@
+kind: java-library
+description: Dough is Baked Libs' core utility library, forked and lowered to Java 8 for the Slimefun multi-version universal jar. It is published as separate modules (see below).
+maven_group: io.github.baked-libs
