@@ -1,5 +1,12 @@
 name: Publish Release
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish; empty takes the ref the run was started from'
+        required: false
+        type: string
+        default: ''
   push:
     tags:
       - "*"
@@ -26,7 +33,7 @@ jobs:
 
       # Uploads every dough module as a <dough-module>.jar asset on the release for this tag.
       - name: Publish GitHub Release
-        run: ./gradlew publishGithub -Partifact_version=${{ github.ref_name }} --no-daemon
+        run: ./gradlew publishGithub -Partifact_version=${{ inputs.tag || github.ref_name }} --no-daemon
         # Falls back to the built-in token so publishing works without extra setup; a PAT (if configured)
         # is preferred because a PAT-created release also triggers the readme-dependency workflow.
         env:
