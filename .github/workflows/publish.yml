@@ -9,32 +9,15 @@ on:
         default: ''
   push:
     tags:
-      - "*"
+      - '*'
 permissions:
   contents: write
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout project sources
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # Uploads every dough module as a <dough-module>.jar asset on the release for this tag.
-      - name: Publish GitHub Release
-        run: ./gradlew publishGithub -Partifact_version=${{ inputs.tag || github.ref_name }} --no-daemon
-        # Falls back to the built-in token so publishing works without extra setup; a PAT (if configured)
-        # is preferred because a PAT-created release also triggers the readme-dependency workflow.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+    uses: intisy/workflows/.github/workflows/publish.yml@main
+    with:
+      tag: ${{ inputs.tag }}
+      publish_task: publishGithub
+      gradle_args: --no-daemon
+    secrets:
+      envPAT: ${{ secrets.PAT }}
